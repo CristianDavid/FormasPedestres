@@ -1,37 +1,40 @@
+#!/usr/bin/python2
+# -*- coding: utf-8 -*-
+from __future__ import division # División de punto flotante por defecto
 from __future__ import print_function
+import numpy
+import random
+import copy
 import cv2
+import svmutil
 
-def validate(model, test_set):
-   hit_count  = 0
-   for instance in test_set:
-      if model.classify(instance) == instance.class_label:
-         hit_count += 1
-   return hit_count / len(test_set)
-   
-def train_and_test(model, training_set, test_set):
-   model.train(training_set)
-   return validate(model, test_set)
-
-def cross_validation(model, training_set, k):
-   import random
-   import statistics
-   from copy import deepcopy
-   shuffled_set = deepcopy(training_set)
-   random.shuffle(shuffled_set)
-   offset = int(len(training_set) / k)
-   i = 0
-   mean_list = []
-   while i < len(training_set):
-      range_end = i + offset
-      test_set = shuffled_set[i:range_end]
-      current_training_set = deepcopy(shuffled_set)
-      del current_training_set[i:range_end]
-      mean_list.append(train_and_test(model, current_training_set, test_set))
-      i = range_end
-   return statistics.mean(mean_list), statistics.stdev(mean_list)
-
-def abrir_imagenes(nombre_directorio):
-    pass
+def cross_validation(entradas, salidas, k):
+    indices = [i for i in range(len(entradas))]
+    random.shuffle(indices)
+    entradas_reordenadas = [entradas[i] for i in indices]
+    salidas_reordenadas  = [salidas[i]  for i in indices]
+    promedios = [];
+    offset = int(len(entradas) / k);
+    i = 0
+    while i < len(entradas):
+        fin = i + offset
+        entradas_prueba = entradas_reordenadas[i:fin]
+        salidas_prueba  = salidas_reordenadas[i:fin]
+        entradas_entrenamiento = [entradas_reordenadas[j]\
+            for j in range(len(entradas_reordenadas)) if j not in range(i,fin)]
+        salidas_entrenamiento  = [salidas_reordenadas[j]\
+            for j in range(len(salidas_reordenadas))  if j not in range(i,fin)]
+        modelo_svm = svmutil.svm_train(
+            salidas_entrenamiento, entradas_entrenamiento, '-t 0 -s 0')
+        (_, precision, _) =\
+            svmutil.svm_predict(salidas_prueba, entradas_prueba, modelo_svm)
+        promedio = precision[0]
+        promedios.append(promedio)
+        i = fin
+    media = numpy.mean(promedios) 
+    desviacion_estandar = numpy.std(promedios)
+    return media, desviacion_estandar
+        
 
 def obtener_descriptor(nombre_imagen):
     winSize     = (64,64)
@@ -57,16 +60,6 @@ def obtener_descriptores(directorio):
     return [obtener_descriptor(directorio + archivo)\
             for archivo in os.listdir(directorio) if archivo.endswith(".png")]
 
-def entrenar_y_probar(xe, ye, xp, yp):
-    import svmutil
-    modelo_svm = svmutil.svm_train(ye, xe, '-t 0 -s 0')
-    indices_vs = [i-1 for i in modelo_svm.get_sv_indices()]
-#    print "Vectores soporte: "
-#    for i in indices_vs:
-#        print xe[i] + [ye[i]]
-    svmutil.svm_predict(yp, xp, modelo_svm)
-    return indices_vs
-
 def main():
     import sys
     carpeta_pedestres = 'pedestres/'
@@ -75,16 +68,10 @@ def main():
     descriptores_negativos = obtener_descriptores(carpeta_no_pedestres)
     entradas = descriptores_positivos + descriptores_negativos
     salidas = [1]*len(descriptores_positivos) + [0]*len(descriptores_negativos)
-    entrenar_y_probar(entradas, salidas, entradas, salidas)    
-
+    (promedio, desviacion_estandar) = cross_validation(entradas, salidas, 10)
+    print('Promedio:', promedio)
+    print('Desviación estándar:', desviacion_estandar)
     sys.exit(0)
-    h = obtener_descriptor('ejemplo.png')
-    print('longitud:',len(h))
-    print('caracteristicas=[',end='')
-    for i in range(len(h)):
-        print(h[i][0], end=',\n' if (i+1) % 8 == 0\
-                                else ']\n' if i == len(h)-1\
-                                else ', ')
 
 if __name__ == '__main__':
     main()
