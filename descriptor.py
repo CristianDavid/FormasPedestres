@@ -5,6 +5,8 @@ from __future__ import print_function
 import numpy
 import random
 import copy
+import os
+import sys
 import cv2
 import svmutil
 
@@ -33,10 +35,19 @@ def cross_validation(entradas, salidas, k):
         i = fin
     media = numpy.mean(promedios) 
     desviacion_estandar = numpy.std(promedios)
-    return media, desviacion_estandar
-        
+    return media, desviacion_estandar, modelo_svm
 
-def obtener_descriptor(nombre_imagen):
+def clasificar_imagen(modelo_svm, descriptor, salida):
+    (prediccion,_,_) = svmutil.svm_predict([salida], [descriptor], modelo_svm)
+    print('Salida: ', salida)
+    print('Predicción: ', prediccion[0])
+    return prediccion[0]
+
+def obtener_imagenes(directorio):
+   return [cv2.imread(directorio + archivo)\
+            for archivo in os.listdir(directorio) if archivo.endswith(".png")]       
+
+def obtener_descriptor(imagen):
     winSize     = (64,64)
     blockSize   = (16,16)
     blockStride = (16,16) # 8,8 por defecto
@@ -51,26 +62,33 @@ def obtener_descriptor(nombre_imagen):
     hog = cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nbins,
                             derivAperture, winSigma, histogramNormType,
                             L2HysThreshold, gammaCorrection, nlevels)
-    img = cv2.imread(nombre_imagen)
-    img = cv2.resize(img, (64, 128))
-    return [h[0] for h in hog.compute(img)]
+    imagen = cv2.resize(imagen, (64, 128)) #El tamaño depende de los parametros
+    return [h[0] for h in hog.compute(imagen)]
 
-def obtener_descriptores(directorio):
-    import os
-    return [obtener_descriptor(directorio + archivo)\
-            for archivo in os.listdir(directorio) if archivo.endswith(".png")]
+def obtener_descriptores(imagenes):
+    return [obtener_descriptor(imagen) for imagen in imagenes]
 
 def main():
-    import sys
     carpeta_pedestres = 'pedestres/'
     carpeta_no_pedestres = 'no_pedestres/'
-    descriptores_positivos = obtener_descriptores(carpeta_pedestres)
-    descriptores_negativos = obtener_descriptores(carpeta_no_pedestres)
+    print('leyendo imagenes')
+    imagenes_positivas = obtener_imagenes(carpeta_pedestres)
+    imagenes_negativas = obtener_imagenes(carpeta_no_pedestres)
+    imagenes_positivas = imagenes_positivas[:600] # Para no tardar tanto
+    imagenes_negativas = imagenes_negativas[:600]
+    print('obteniendo_descriptores')
+    descriptores_positivos = obtener_descriptores(imagenes_positivas)
+    descriptores_negativos = obtener_descriptores(imagenes_negativas)
+    imagenes = imagenes_negativas + imagenes_positivas
     entradas = descriptores_positivos + descriptores_negativos
-    salidas = [1]*len(descriptores_positivos) + [0]*len(descriptores_negativos)
-    (promedio, desviacion_estandar) = cross_validation(entradas, salidas, 10)
+    salidas  = [1]*len(descriptores_positivos) + [0]*len(descriptores_negativos)
+    print('ejecutando cross validation')
+    (promedio, desviacion_estandar, modelo_svm) =\
+            cross_validation(entradas, salidas, 10)
     print('Promedio:', promedio)
     print('Desviación estándar:', desviacion_estandar)
+    print('Clasificando la imagen 300')
+    clasificar_imagen(modelo_svm, entradas[300], salidas[300])
     sys.exit(0)
 
 if __name__ == '__main__':
