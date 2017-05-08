@@ -1,4 +1,7 @@
+#!/usr/bin/python2
+# -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import division # División de punto flotante por defecto
 from threading import Thread
 from kivy.app import App
 from kivy.uix.filechooser import FileChooserListView
@@ -13,7 +16,7 @@ import copy
 import os
 import sys
 import cv2
-# import svmutil
+import svmutil
 
 
 def on_thread(function):
@@ -93,8 +96,8 @@ def obtener_descriptores(imagenes):
 
 
 def start_train(pedestrian_path, not_pedestrian_path, popup_instance):
-    carpeta_pedestres = pedestrian_path
-    carpeta_no_pedestres = not_pedestrian_path
+    carpeta_pedestres = pedestrian_path + "/"
+    carpeta_no_pedestres = not_pedestrian_path + "/"
     popup_instance.content.text = 'Leyendo imagenes'
     imagenes_positivas = obtener_imagenes(carpeta_pedestres)
     imagenes_negativas = obtener_imagenes(carpeta_no_pedestres)
@@ -110,7 +113,7 @@ def start_train(pedestrian_path, not_pedestrian_path, popup_instance):
     (promedio, desviacion_estandar, modelo_svm) =\
             cross_validation(entradas, salidas, 10)
     popup_instance.content.text = 'Promedio: {}\nDesviacion estandar: {}\nDa click fuera para continuar.'.format(promedio, desviacion_estandar)
-    popup.auto_dismiss = True
+    popup_instance.auto_dismiss = True
     # print('Clasificando la imagen 300')
     # clasificar_imagen(modelo_svm, entradas[300], salidas[300])
     # sys.exit(0)
