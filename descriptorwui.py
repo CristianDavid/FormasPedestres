@@ -172,7 +172,7 @@ class MainScreen(GridLayout):
                 self.remove_widget(self.second_folder)
                 self.remove_widget(self.start_training)
 
-                self.first_folder_label = "Carpeta de pruebas"
+                self.first_folder_label.text = "Carpeta de pruebas"
                 #self.add_widget(self.test_folder_label)
                 self.add_widget(self.test_folder)
                 self.add_widget(self.read_images)
@@ -210,7 +210,7 @@ class MainScreen(GridLayout):
           not_pedestrian_path=self.second_folder.selection[0],
           popup_instance=popup,
         )
-        self.first_folder_label = "Carpeta de pruebas"
+        self.first_folder_label.text = "Carpeta de pruebas"
         # self.remove_widget(self.first_folder_label)
         self.remove_widget(self.first_folder)
         self.remove_widget(self.second_folder_label)
@@ -238,7 +238,7 @@ class MainScreen(GridLayout):
 
             self.test_image.source = self.images_route.pop()
             res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
-            self.first_folder_label = 'Pedestre' if res == 1 else 'No pedestre'
+            self.first_folder_label.text = 'Pedestre' if res == 1 else 'No pedestre'
 
             #self.remove_widget(self.test_folder_label)
             self.remove_widget(self.test_folder)
@@ -269,7 +269,7 @@ class MainScreen(GridLayout):
         else:
             self.test_image.source = self.images_route.pop()
             res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
-            self.first_folder_label = 'Pedestre' if res == 1 else 'No pedestre'
+            self.first_folder_label.text = 'Pedestre' if res == 1 else 'No pedestre'
 
 
 class MyApp(App):
