@@ -135,7 +135,7 @@ class MainScreen(GridLayout):
 
         # Image Widget
         self.test_image = Image()
-        self.test_image_result = Label(font_size=40)
+        self.test_image_result = Label(text='TEST',font_size=40)
 
         # File and Label Widget
         self.first_folder_label = Label(text="Carpeta pedestres", font_size=40)
@@ -176,6 +176,7 @@ class MainScreen(GridLayout):
                 self.add_widget(self.test_folder_label)
                 self.add_widget(self.test_folder)
                 self.add_widget(self.read_images)
+                return
         if len(self.first_folder.selection) < 1 or len(self.second_folder.selection) < 1:
             popup = Popup(
                 title='Error',

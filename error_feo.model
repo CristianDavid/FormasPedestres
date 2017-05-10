@@ -1,0 +1,34 @@
+ Traceback (most recent call last):
+   File "./descriptorwui.py", line 269, in <module>
+     MyApp().run()
+   File "/usr/lib/python2.7/dist-packages/kivy/app.py", line 792, in run
+     runTouchApp()
+   File "/usr/lib/python2.7/dist-packages/kivy/base.py", line 481, in runTouchApp
+     EventLoop.window.mainloop()
+   File "/usr/lib/python2.7/dist-packages/kivy/core/window/window_pygame.py", line 381, in mainloop
+     self._mainloop()
+   File "/usr/lib/python2.7/dist-packages/kivy/core/window/window_pygame.py", line 287, in _mainloop
+     EventLoop.idle()
+   File "/usr/lib/python2.7/dist-packages/kivy/base.py", line 324, in idle
+     self.dispatch_input()
+   File "/usr/lib/python2.7/dist-packages/kivy/base.py", line 309, in dispatch_input
+     post_dispatch_input(*pop(0))
+   File "/usr/lib/python2.7/dist-packages/kivy/base.py", line 220, in post_dispatch_input
+     listener.dispatch('on_motion', etype, me)
+   File "kivy/_event.pyx", line 316, in kivy._event.EventDispatcher.dispatch (kivy/_event.c:4690)
+   File "/usr/lib/python2.7/dist-packages/kivy/core/window/__init__.py", line 645, in on_motion
+     self.dispatch('on_touch_down', me)
+   File "kivy/_event.pyx", line 316, in kivy._event.EventDispatcher.dispatch (kivy/_event.c:4690)
+   File "/usr/lib/python2.7/dist-packages/kivy/core/window/__init__.py", line 657, in on_touch_down
+     if w.dispatch('on_touch_down', touch):
+   File "kivy/_event.pyx", line 316, in kivy._event.EventDispatcher.dispatch (kivy/_event.c:4690)
+   File "/usr/lib/python2.7/dist-packages/kivy/uix/widget.py", line 284, in on_touch_down
+     if child.dispatch('on_touch_down', touch):
+   File "kivy/_event.pyx", line 316, in kivy._event.EventDispatcher.dispatch (kivy/_event.c:4690)
+   File "/usr/lib/python2.7/dist-packages/kivy/uix/behaviors.py", line 93, in on_touch_down
+     self.dispatch('on_press')
+   File "kivy/_event.pyx", line 312, in kivy._event.EventDispatcher.dispatch (kivy/_event.c:4636)
+   File "./descriptorwui.py", line 226, in __on_click_test__
+     self.test_image.source = self.images_route.pop()
+ IndexError: pop from empty list
+
