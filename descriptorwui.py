@@ -94,7 +94,6 @@ class MainScreen(GridLayout):
     def __on_click_train__(self, instance):
         if len(self.first_folder.selection) > 0:
             if self.first_folder.selection[0].endswith('.model'):
-                print(self.first_folder.selection[0])
                 self.svm = svmutil.svm_load_model(self.first_folder.selection[0])
                 #self.remove_widget(self.first_folder_label)
                 self.remove_widget(self.first_folder)
@@ -125,8 +124,6 @@ class MainScreen(GridLayout):
             )
             popup.open()
             self.__start_train__(popup)
-            # print(self.first_folder.selection)
-            # print(self.second_folder.selection)
 
     @on_thread
     def __start_train__(self,popup):
