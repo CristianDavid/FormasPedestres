@@ -39,19 +39,27 @@ def cross_validation(entradas, salidas, k):
     desviacion_estandar = numpy.std(promedios)
     return media, desviacion_estandar, modelo_svm
 
+
 def clasificar_imagen(modelo_svm, descriptor, salida):
     (prediccion,_,_) = svmutil.svm_predict([salida], [descriptor], modelo_svm)
     return prediccion[0]
 
+
+def obtener_imagen(ruta):
+    return cv2.imread(ruta)
+
+
 def obtener_imagenes(directorio):
-   return [cv2.imread(directorio + archivo)\
+   return [obtener_imagen(directorio + archivo)\
             for archivo in os.listdir(directorio)\
             if archivo.endswith(".png") or archivo.endswith('.jpg')]
+
 
 def obtener_ruta_imagenes(directorio):
     return [directorio + archivo \
             for archivo in os.listdir(directorio)\
             if archivo.endswith(".png") or archivo.endswith(".jpg")]
+
 
 def obtener_descriptor(imagen):
     winSize     = (64,64)
@@ -71,8 +79,10 @@ def obtener_descriptor(imagen):
     imagen = cv2.resize(imagen, (64, 128)) #El tamaño depende de los parametros
     return [h[0] for h in hog.compute(imagen)]
 
+
 def obtener_descriptores(imagenes):
     return [obtener_descriptor(imagen) for imagen in imagenes]
+
 
 def main():
     carpeta_pedestres = '../pedestres/'
@@ -123,6 +133,7 @@ def main():
 #        cv2.imshow('imagen', imagen)
 #        cv2.waitKey()
     sys.exit(0)
+
 
 if __name__ == '__main__':
     main()

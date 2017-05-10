@@ -19,7 +19,7 @@ import sys
 import cv2
 from descriptor import cross_validation, clasificar_imagen, obtener_descriptor,\
                        obtener_imagenes, obtener_descriptores,\
-                       obtener_ruta_imagenes
+                       obtener_ruta_imagenes, obtener_imagen, obtener_descriptor
 import svmutil
 
 def on_thread(function):
@@ -162,8 +162,13 @@ class MainScreen(GridLayout):
             )
             popup.open()
         else:
-            self.images_route = obtener_ruta_imagenes(self.test_folder.selection[0] + '/')
-            self.images_desc = obtener_imagenes(self.test_folder.selection[0] + '/')
+            if self.test_folder.selection[0].endswith('.png') or self.test_folder.selection[0].endswith('.jpg'):
+                self.images_route = [self.test_folder.selection[0]]
+                self.images_desc = [obtener_imagen(self.test_folder.selection[0])]
+            else:
+                self.images_route = obtener_ruta_imagenes(self.test_folder.selection[0] + '/')
+                self.images_desc = obtener_imagenes(self.test_folder.selection[0] + '/')
+
             self.images_desc = obtener_descriptores(self.images_desc)
 
             self.test_image.source = self.images_route.pop()
@@ -193,6 +198,7 @@ class MainScreen(GridLayout):
             )
 
             popup.open()
+            self.first_folder_label.text = "Carpeta de pruebas"
             #self.add_widget(self.test_folder_label)
             self.add_widget(self.test_folder)
             self.add_widget(self.read_images)
@@ -205,7 +211,7 @@ class MainScreen(GridLayout):
 class MyApp(App):
 
     def build(self):
-        self.title = 'Testerino'
+        self.title = 'Formas pedestres'
         return MainScreen()
 
 if __name__ == '__main__':
