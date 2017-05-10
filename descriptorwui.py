@@ -164,6 +164,18 @@ class MainScreen(GridLayout):
         print(selection)
 
     def __on_click_train__(self, instance):
+        if len(self.first_folder.selection) > 0:
+            if self.first_folder.selection[0].endswith('.model'):
+                self.svm = svmutil.svm_load_model(self.first_folder.selection[0])
+                self.remove_widget(self.first_folder_label)
+                self.remove_widget(self.first_folder)
+                self.remove_widget(self.second_folder_label)
+                self.remove_widget(self.second_folder)
+                self.remove_widget(self.start_training)
+
+                self.add_widget(self.test_folder_label)
+                self.add_widget(self.test_folder)
+                self.add_widget(self.read_images)
         if len(self.first_folder.selection) < 1 or len(self.second_folder.selection) < 1:
             popup = Popup(
                 title='Error',
@@ -236,7 +248,7 @@ class MainScreen(GridLayout):
             self.add_widget(self.next_image)
 
     def __on_click_next_image__(self, instance):
-        if len(self.images_route) == 0:
+        if len(self.images_route) == 0 or len(self.images_desc) == 0:
             self.remove_widget(self.test_image_result)
             self.remove_widget(self.test_image)
             self.remove_widget(self.next_image)
