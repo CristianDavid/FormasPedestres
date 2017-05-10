@@ -46,7 +46,12 @@ def clasificar_imagen(modelo_svm, descriptor, salida):
 def obtener_imagenes(directorio):
    return [cv2.imread(directorio + archivo)\
             for archivo in os.listdir(directorio)\
-            if archivo.endswith(".png") or archivo.endswith('.jpg')]       
+            if archivo.endswith(".png") or archivo.endswith('.jpg')]
+
+def obtener_ruta_imagenes(directorio):
+    return [directorio + archivo \
+            for archivo in os.listdir(directorio)\
+            if archivo.endswith(".png") or archivo.endswith(".jpg")]
 
 def obtener_descriptor(imagen):
     winSize     = (64,64)

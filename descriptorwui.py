@@ -17,8 +17,10 @@ import copy
 import os
 import sys
 import cv2
+from descriptor import cross_validation, clasificar_imagen, obtener_descriptor,\
+                       obtener_imagenes, obtener_descriptores,\
+                       obtener_ruta_imagenes
 import svmutil
-
 
 def on_thread(function):
     """
@@ -31,75 +33,6 @@ def on_thread(function):
         t.daemon = True
         t.start()
     return decorator
-
-
-def cross_validation(entradas, salidas, k):
-    indices = [i for i in range(len(entradas))]
-    random.shuffle(indices)
-    entradas_reordenadas = [entradas[i] for i in indices]
-    salidas_reordenadas  = [salidas[i]  for i in indices]
-    promedios = [];
-    offset = int(len(entradas) / k);
-    i = 0
-    while i < len(entradas):
-        fin = i + offset
-        entradas_prueba = entradas_reordenadas[i:fin]
-        salidas_prueba  = salidas_reordenadas[i:fin]
-        entradas_entrenamiento = [entradas_reordenadas[j]\
-            for j in range(len(entradas_reordenadas)) if j not in range(i,fin)]
-        salidas_entrenamiento  = [salidas_reordenadas[j]\
-            for j in range(len(salidas_reordenadas))  if j not in range(i,fin)]
-        modelo_svm = svmutil.svm_train(
-            salidas_entrenamiento, entradas_entrenamiento, '-t 0 -s 0')
-        (_, precision, _) =\
-            svmutil.svm_predict(salidas_prueba, entradas_prueba, modelo_svm)
-        promedio = precision[0]
-        promedios.append(promedio)
-        i = fin
-    media = numpy.mean(promedios) 
-    desviacion_estandar = numpy.std(promedios)
-    return media, desviacion_estandar, modelo_svm
-
-
-def clasificar_imagen(modelo_svm, descriptor, salida):
-    (prediccion,_,_) = svmutil.svm_predict([salida], [descriptor], modelo_svm)
-    print('Salida: ', salida)
-    print('Prediccion: ', prediccion[0])
-    return prediccion[0]
-
-
-def obtener_ruta_imagenes(directorio):
-    return [directorio + archivo \
-            for archivo in os.listdir(directorio) if archivo.endswith(".png") or archivo.endswith(".jpg")]
-
-
-def obtener_imagenes(directorio):
-   return [cv2.imread(directorio + archivo)\
-            for archivo in os.listdir(directorio) if archivo.endswith(".png") or archivo.endswith(".jpg")]       
-
-
-def obtener_descriptor(imagen):
-    winSize     = (64,64)
-    blockSize   = (16,16)
-    blockStride = (16,16) # 8,8 por defecto
-    cellSize = (16,16) # 8,8 por defecto
-    nbins    = 3 # 9 por defecto
-    derivAperture = 1
-    winSigma = 4.
-    histogramNormType = 0
-    L2HysThreshold  = 2.0000000000000001e-01
-    gammaCorrection = 0
-    nlevels = 64
-    hog = cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nbins,
-                            derivAperture, winSigma, histogramNormType,
-                            L2HysThreshold, gammaCorrection, nlevels)
-    imagen = cv2.resize(imagen, (64, 128)) #El tamano depende de los parametros
-    return [h[0] for h in hog.compute(imagen)]
-
-
-def obtener_descriptores(imagenes):
-    return [obtener_descriptor(imagen) for imagen in imagenes]
-
 
 def start_train(pedestrian_path, not_pedestrian_path, popup_instance):
     carpeta_pedestres = pedestrian_path + "/"
@@ -121,10 +54,6 @@ def start_train(pedestrian_path, not_pedestrian_path, popup_instance):
     popup_instance.content.text = 'Promedio: {}\nDesviacion estandar: {}\nDa click fuera para continuar.'.format(promedio, desviacion_estandar)
     popup_instance.auto_dismiss = True
     return modelo_svm
-    # print('Clasificando la imagen 300')
-    # clasificar_imagen(modelo_svm, entradas[300], salidas[300])
-    # sys.exit(0)
-
 
 class MainScreen(GridLayout):
 
