@@ -9,6 +9,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.image import Image
 import time
 import numpy
 import random
@@ -67,6 +68,11 @@ def clasificar_imagen(modelo_svm, descriptor, salida):
     return prediccion[0]
 
 
+def obtener_ruta_imagenes(directorio):
+    return [directorio + archivo \
+            for archivo in os.listdir(directorio) if archivo.endswith(".png")]
+
+
 def obtener_imagenes(directorio):
    return [cv2.imread(directorio + archivo)\
             for archivo in os.listdir(directorio) if archivo.endswith(".png")]       
@@ -114,6 +120,7 @@ def start_train(pedestrian_path, not_pedestrian_path, popup_instance):
             cross_validation(entradas, salidas, 10)
     popup_instance.content.text = 'Promedio: {}\nDesviacion estandar: {}\nDa click fuera para continuar.'.format(promedio, desviacion_estandar)
     popup_instance.auto_dismiss = True
+    return modelo_svm
     # print('Clasificando la imagen 300')
     # clasificar_imagen(modelo_svm, entradas[300], salidas[300])
     # sys.exit(0)
@@ -122,64 +129,135 @@ def start_train(pedestrian_path, not_pedestrian_path, popup_instance):
 class MainScreen(GridLayout):
 
 
-	def __init__(self, **kwargs):
-		super(MainScreen, self).__init__(**kwargs)
-		self.cols = 2
+    def __init__(self, **kwargs):
+        super(MainScreen, self).__init__(**kwargs)
+        self.cols = 2
 
-		# File and Label Widget
-		self.first_folder_label = Label(text="Carpeta pedestres", font_size=40)
-		self.second_folder_label = Label(text="Carpeta no pedestres", font_size=40)
-		self.first_folder = FileChooserListView(path='.', dirselect=True)
-		self.second_folder = FileChooserListView(path='.', dirselect=True)
+        # Image Widget
+        self.test_image = Image()
+        self.test_image_result = Label(font_size=40)
 
-		# Button Widget
-		self.start_training = Button(text='Iniciar entrenamiento', widht=200)
-		self.start_training.bind(on_press=self.__on_click__)
+        # File and Label Widget
+        self.first_folder_label = Label(text="Carpeta pedestres", font_size=40)
+        self.second_folder_label = Label(text="Carpeta no pedestres", font_size=40)
+        self.test_folder_label = Label(text="Carpeta de pruebas", font_size=40)
+        self.first_folder = FileChooserListView(path='.', dirselect=True)
+        self.second_folder = FileChooserListView(path='.', dirselect=True)
+        self.test_folder = FileChooserListView(path='.', dirselect=True)
 
-		# Add Widgets
-		self.add_widget(self.first_folder_label)
-		self.add_widget(self.first_folder)
-		self.add_widget(self.second_folder_label)
-		self.add_widget(self.second_folder)
-		self.add_widget(self.start_training)
+        # Button Widget
+        self.start_training = Button(text='Iniciar entrenamiento', width=200)
+        self.start_training.bind(on_press=self.__on_click_train__)
+        self.read_images = Button(text='Iniciar pruebas', width=200)
+        self.read_images.bind(on_press=self.__on_click_test__)
+        self.next_image = Button(text='Siguiente imagen', width=200)
+        self.next_image.bind(on_press=self.__on_click_next_image__)
 
-	def __get_path__(self, instance, selection):
-		print(selection)
+        # Add Widgets
+        self.add_widget(self.first_folder_label)
+        self.add_widget(self.first_folder)
+        self.add_widget(self.second_folder_label)
+        self.add_widget(self.second_folder)
+        self.add_widget(self.start_training)
 
-	def __on_click__(self, instance):
-		if len(self.first_folder.selection) < 1 or len(self.second_folder.selection) < 1:
-			popup = Popup(
-				title='asd',
-				content=Label(text='Necesitas seleccionar una carpeta para iniciar.'), 
-				size=(400,100), 
-				size_hint=(None, None)
-			)
-			popup.open()
-		else:
-			popup = Popup(
-				title='asd',
-				content=Label(text='Realizando entrenamiento...'), 
-				size=(400,150), 
-				size_hint=(None, None),
-				auto_dismiss=False,
-			)
-			popup.open()
-			self.__start_train__(popup)
-			# print(self.first_folder.selection)
-			# print(self.second_folder.selection)
+    def __get_path__(self, instance, selection):
+        print(selection)
 
-	@on_thread
-	def __start_train__(self,popup):
-		"""
-		Starts global function start_train on a thread
-		:param popup:
-    	:return:
-		"""
-		start_train(
-			pedestrian_path=self.first_folder.selection[0],
-			not_pedestrian_path=self.second_folder.selection[0],
-			popup_instance=popup,
-		)
+    def __on_click_train__(self, instance):
+        if len(self.first_folder.selection) < 1 or len(self.second_folder.selection) < 1:
+            popup = Popup(
+                title='Error',
+                content=Label(text='Necesitas seleccionar una carpeta para iniciar.'), 
+                size=(400,100), 
+                size_hint=(None, None)
+            )
+            popup.open()
+        else:
+            popup = Popup(
+                title='Entrenando',
+                content=Label(text='Realizando entrenamiento...'), 
+                size=(400,150), 
+                size_hint=(None, None),
+                auto_dismiss=False,
+            )
+            # popup.open()
+            self.__start_train__(popup)
+            # print(self.first_folder.selection)
+            # print(self.second_folder.selection)
+
+    @on_thread
+    def __start_train__(self,popup):
+        """
+        Starts global function start_train on a thread
+        :param popup:
+        :return:
+        """
+        self.svm = start_train(
+          pedestrian_path=self.first_folder.selection[0],
+          not_pedestrian_path=self.second_folder.selection[0],
+          popup_instance=popup,
+        )
+
+        self.remove_widget(self.first_folder_label)
+        self.remove_widget(self.first_folder)
+        self.remove_widget(self.second_folder_label)
+        self.remove_widget(self.second_folder)
+        self.remove_widget(self.start_training)
+
+        self.add_widget(self.test_folder_label)
+        self.add_widget(self.test_folder)
+        self.add_widget(self.read_images)
+
+
+    def __on_click_test__(self, instance):
+        if len(self.test_folder.selection) < 1:
+            popup = Popup(
+                title='Error',
+                content=Label(text='Necesitas seleccionar una carpeta para iniciar.'), 
+                size=(400,100), 
+                size_hint=(None, None)
+            )
+            popup.open()
+        else:
+            self.images_route = obtener_ruta_imagenes(self.test_folder.selection[0] + '/')
+            self.images_desc = obtener_imagenes(self.test_folder.selection[0] + '/')
+            self.images_desc = obtener_descriptores(self.images_desc)
+
+            self.test_image.source = self.images_route.pop()
+            res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
+            self.test_image_result = 'Pedestre' if res == 1 else 'No pedestre'
+
+            self.remove_widget(self.test_folder_label)
+            self.remove_widget(self.test_folder)
+            self.remove_widget(self.read_images)
+
+            self.add_widget(self.test_image)
+            self.add_widget(self.test_image_result)
+            self.add_widget(self.next_image)
+
+    def __on_click_next_image__(self, instance):
+        if len(self.images_route) == 0:
+            self.remove_widget(self.test_image)
+            self.remove_widget(self.test_image_result)
+            self.remove_widget(self.next_image)
+
+            popup = Popup(
+                title='Finalizado',
+                content=Label(text='Pruebas finalizadas.\nDa click fuera para hacer más pruebas'), 
+                size=(400,150), 
+                size_hint=(None, None),
+                auto_dismiss=True,
+            )
+
+            popup.open()
+            self.add_widget(self.test_folder_label)
+            self.add_widget(self.test_folder)
+            self.add_widget(self.read_images)
+        else:
+            self.test_image.source = self.images_route.pop()
+            res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
+            self.test_image_result = 'Pedestre' if res == 1 else 'No pedestre'
+
 
 class MyApp(App):
 
@@ -188,4 +266,4 @@ class MyApp(App):
         return MainScreen()
 
 if __name__ == '__main__':
-	MyApp().run()
+    MyApp().run()
