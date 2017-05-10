@@ -231,14 +231,14 @@ class MainScreen(GridLayout):
             self.remove_widget(self.test_folder)
             self.remove_widget(self.read_images)
 
-            self.add_widget(self.test_image)
             self.add_widget(self.test_image_result)
+            self.add_widget(self.test_image)
             self.add_widget(self.next_image)
 
     def __on_click_next_image__(self, instance):
         if len(self.images_route) == 0:
-            self.remove_widget(self.test_image)
             self.remove_widget(self.test_image_result)
+            self.remove_widget(self.test_image)
             self.remove_widget(self.next_image)
 
             popup = Popup(
