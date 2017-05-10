@@ -180,7 +180,7 @@ class MainScreen(GridLayout):
                 size_hint=(None, None),
                 auto_dismiss=False,
             )
-            # popup.open()
+            popup.open()
             self.__start_train__(popup)
             # print(self.first_folder.selection)
             # print(self.second_folder.selection)
