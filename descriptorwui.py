@@ -269,7 +269,7 @@ class MainScreen(GridLayout):
         else:
             self.test_image.source = self.images_route.pop()
             res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
-            self.self.first_folder_label = 'Pedestre' if res == 1 else 'No pedestre'
+            self.first_folder_label = 'Pedestre' if res == 1 else 'No pedestre'
 
 
 class MyApp(App):
