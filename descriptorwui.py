@@ -135,7 +135,6 @@ class MainScreen(GridLayout):
 
         # Image Widget
         self.test_image = Image()
-        self.test_image_result = Label(text='TEST',font_size=40)
 
         # File and Label Widget
         self.first_folder_label = Label(text="Carpeta pedestres", font_size=40)
@@ -167,13 +166,14 @@ class MainScreen(GridLayout):
         if len(self.first_folder.selection) > 0:
             if self.first_folder.selection[0].endswith('.model'):
                 self.svm = svmutil.svm_load_model(self.first_folder.selection[0])
-                self.remove_widget(self.first_folder_label)
+                #self.remove_widget(self.first_folder_label)
                 self.remove_widget(self.first_folder)
                 self.remove_widget(self.second_folder_label)
                 self.remove_widget(self.second_folder)
                 self.remove_widget(self.start_training)
 
-                self.add_widget(self.test_folder_label)
+                self.first_folder_label = "Carpeta de pruebas"
+                #self.add_widget(self.test_folder_label)
                 self.add_widget(self.test_folder)
                 self.add_widget(self.read_images)
                 return
@@ -210,14 +210,14 @@ class MainScreen(GridLayout):
           not_pedestrian_path=self.second_folder.selection[0],
           popup_instance=popup,
         )
-
-        self.remove_widget(self.first_folder_label)
+        self.first_folder_label = "Carpeta de pruebas"
+        # self.remove_widget(self.first_folder_label)
         self.remove_widget(self.first_folder)
         self.remove_widget(self.second_folder_label)
         self.remove_widget(self.second_folder)
         self.remove_widget(self.start_training)
 
-        self.add_widget(self.test_folder_label)
+        #self.add_widget(self.test_folder_label)
         self.add_widget(self.test_folder)
         self.add_widget(self.read_images)
 
@@ -238,19 +238,19 @@ class MainScreen(GridLayout):
 
             self.test_image.source = self.images_route.pop()
             res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
-            self.test_image_result = 'Pedestre' if res == 1 else 'No pedestre'
+            self.first_folder_label = 'Pedestre' if res == 1 else 'No pedestre'
 
-            self.remove_widget(self.test_folder_label)
+            #self.remove_widget(self.test_folder_label)
             self.remove_widget(self.test_folder)
             self.remove_widget(self.read_images)
 
-            self.add_widget(self.test_image_result)
+            #self.add_widget(self.test_image_result)
             self.add_widget(self.test_image)
             self.add_widget(self.next_image)
 
     def __on_click_next_image__(self, instance):
         if len(self.images_route) == 0 or len(self.images_desc) == 0:
-            self.remove_widget(self.test_image_result)
+            #self.remove_widget(self.test_image_result)
             self.remove_widget(self.test_image)
             self.remove_widget(self.next_image)
 
@@ -263,13 +263,13 @@ class MainScreen(GridLayout):
             )
 
             popup.open()
-            self.add_widget(self.test_folder_label)
+            #self.add_widget(self.test_folder_label)
             self.add_widget(self.test_folder)
             self.add_widget(self.read_images)
         else:
             self.test_image.source = self.images_route.pop()
             res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
-            self.test_image_result = 'Pedestre' if res == 1 else 'No pedestre'
+            self.self.first_folder_label = 'Pedestre' if res == 1 else 'No pedestre'
 
 
 class MyApp(App):
