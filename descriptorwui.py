@@ -61,6 +61,7 @@ class MainScreen(GridLayout):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
         self.cols = 2
+        self.cuenta_imagenes = 1
 
         # Image Widget
         self.test_image = Image()
@@ -170,7 +171,9 @@ class MainScreen(GridLayout):
 
             self.test_image.source = self.images_route.pop()
             res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
-            self.first_folder_label.text = 'Pedestre' if res == 1 else 'No pedestre'
+            self.cuenta_imagenes = 1
+            self.first_folder_label.text = str(self.cuenta_imagenes) + '.-' +\
+                  ('Pedestre' if res == 1 else 'No pedestre')
 
             #self.remove_widget(self.test_folder_label)
             self.remove_widget(self.test_folder)
@@ -202,7 +205,9 @@ class MainScreen(GridLayout):
         else:
             self.test_image.source = self.images_route.pop()
             res = clasificar_imagen(self.svm, self.images_desc.pop(), 0)
-            self.first_folder_label.text = 'Pedestre' if res == 1 else 'No pedestre'
+            self.cuenta_imagenes += 1
+            self.first_folder_label.text = str(self.cuenta_imagenes) + '.-' +\
+                  ('Pedestre' if res == 1 else 'No pedestre')
 
 
 class MyApp(App):
